@@ -17,7 +17,7 @@ import java.sql.SQLException;
  * 
  * Configuración:
  * - Base de datos: MySQL
- * - Puerto: 33306 (puerto personalizado)
+ * - Puerto: 3306 (puerto estándar)
  * - Schema: tpi_p2
  * 
  * @author Grupo 8
@@ -26,7 +26,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
 
     /** URL de conexión JDBC a la base de datos MySQL */
-    private static final String URL = "jdbc:mysql://localhost:33306/tpi_p2";
+    private static final String URL = "jdbc:mysql://localhost:3306/tpi_p2";
     
     /** Usuario de la base de datos */
     private static final String USER = "root";
