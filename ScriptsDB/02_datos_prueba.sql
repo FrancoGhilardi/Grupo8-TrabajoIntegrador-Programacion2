@@ -22,7 +22,7 @@ INSERT INTO Empleado (eliminado, nombre, apellido, dni, email, fechaIngreso, are
 SELECT COUNT(*) AS total_legajos FROM Legajo;
 SELECT COUNT(*) AS total_empleados FROM Empleado;
 SELECT e.id, e.apellido, l.nroLegajo FROM Empleado e INNER JOIN Legajo l ON e.legajo = l.id LIMIT 5;
---Revisar los counts y el JOIN (deberían ser 5 y 5).
+-- Revisar los counts y el JOIN (deberían ser 5 y 5).
 
 -- 2) Reglas de unicidad (probar y esperar error)
 -- INSERT INTO Empleado (eliminado, nombre, apellido, dni, email, fechaIngreso, area, legajo)
