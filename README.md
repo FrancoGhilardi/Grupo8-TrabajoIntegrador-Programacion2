@@ -104,7 +104,7 @@ Para agregarlo a tu proyecto en NetBeans:
 1. Abre el proyecto `tpi_p2` en NetBeans
 2. Clic derecho en el proyecto → **Clean and Build**
 3. Ejecuta la clase `TestConexion.java` o `tpi_p2.java`:
-   - Clic derecho en el archivo → **Run File**
+    - Clic derecho en el archivo → **Run File**
 
 ### Opción 2: Desde la Línea de Comandos
 
@@ -154,17 +154,43 @@ Grupo8-TrabajoIntegrador-Programacion2/
 └── tpi_p2/
     ├── src/
     │   ├── config/
-    │   │   └── DatabaseConnection.java    # Configuración de conexión
+    │   │   └── DatabaseConnection.java      # Configuración de conexión JDBC
     │   ├── entities/
-    │   │   ├── BaseEntity.java            # Clase base
-    │   │   ├── Empleado.java              # Entidad Empleado
-    │   │   ├── EstadoLegajo.java          # Enum Estado
-    │   │   └── Legajo.java                # Entidad Legajo
+    │   │   ├── BaseEntity.java              # Clase base con id y eliminado
+    │   │   ├── Empleado.java                # Entidad principal (A)
+    │   │   ├── EstadoLegajo.java            # Enum ACTIVO / INACTIVO
+    │   │   └── Legajo.java                  # Entidad relacionada (B)
+    │   ├── dao/
+    │   │   ├── GenericDao.java              # Interfaz genérica CRUD
+    │   │   ├── EmpleadoDao.java             # DAO específico de Empleado
+    │   │   └── LegajoDao.java               # DAO específico de Legajo
+    │   ├── dao/impl/
+    │   │   ├── EmpleadoDaoJdbcImpl.java     # Implementación JDBC de EmpleadoDao
+    │   │   └── LegajoDaoJdbcImpl.java       # Implementación JDBC de LegajoDao
     │   └── tpi_p2/
-    │       ├── TestConexion.java          # Test de conexión
-    │       └── tpi_p2.java                # Clase principal
-    └── build.xml                          # Configuración Ant
+    │       ├── TestConexion.java            # Test de conexión
+    │       └── tpi_p2.java                  # Clase principal / menú (en desarrollo)
+    └── build.xml                            # Configuración Ant
 ```
+
+---
+
+## 🧱 Capa DAO (Data Access Object)
+
+La capa DAO encapsula todo el acceso a la base de datos utilizando JDBC y `PreparedStatement`.
+
+- `GenericDao<T>`: define operaciones CRUD genéricas (`crear`, `leer`, `leerTodos`, `actualizar`, `eliminar`)
+  y versiones con `Connection` externa para participar en transacciones.
+
+- `EmpleadoDao` / `EmpleadoDaoJdbcImpl`:
+  Implementa la persistencia de la entidad `Empleado`, con búsqueda por DNI
+  y recuperación del `Legajo` asociado mediante LEFT JOIN.
+
+- `LegajoDao` / `LegajoDaoJdbcImpl`:
+  Implementa la persistencia de la entidad `Legajo`, con búsqueda por número de legajo.
+
+Todos los métodos están implementados con manejo de excepciones `SQLException`,
+baja lógica (`eliminado = 1`), y conexión gestionada por la clase `DatabaseConnection`.
 
 ---
 
