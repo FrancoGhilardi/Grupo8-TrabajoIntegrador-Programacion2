@@ -27,7 +27,5 @@ public class tpi_p2 {
     public static void main(String[] args) {
                 
         TestConexion.probarConexion(); // Ejecuta la prueba de conexión a la base de datos es opcional.
-
     }
-    
 }
