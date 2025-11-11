@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="tpi_p2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/tpi_p2/dist/tpi_p2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
