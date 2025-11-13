@@ -149,28 +149,40 @@ Si la conexión es exitosa, deberías ver un mensaje confirmando la conexión a 
 Grupo8-TrabajoIntegrador-Programacion2/
 ├── README.md
 ├── ScriptsDB/
-│   ├── 01_creacion_base.sql      # Script de creación de BD
-│   └── 02_datos_prueba.sql       # Script de datos de prueba
+│   ├── 01_creacion_base.sql                            # Script de creación de BD
+│   └── 02_datos_prueba.sql                             # Script de datos de prueba
 └── tpi_p2/
     ├── src/
     │   ├── config/
-    │   │   └── DatabaseConnection.java      # Configuración de conexión JDBC
+    │   │   └── DatabaseConnection.java                 # Configuración de conexión JDBC
     │   ├── entities/
-    │   │   ├── BaseEntity.java              # Clase base con id y eliminado
-    │   │   ├── Empleado.java                # Entidad principal (A)
-    │   │   ├── EstadoLegajo.java            # Enum ACTIVO / INACTIVO
-    │   │   └── Legajo.java                  # Entidad relacionada (B)
-    │   ├── dao/
-    │   │   ├── GenericDao.java              # Interfaz genérica CRUD
-    │   │   ├── EmpleadoDao.java             # DAO específico de Empleado
-    │   │   └── LegajoDao.java               # DAO específico de Legajo
+    │   │   ├── BaseEntity.java                         # Clase base con id y eliminado
+    │   │   ├── Empleado.java                           # Entidad principal (A)
+    │   │   ├── EstadoLegajo.java                       # Enum ACTIVO / INACTIVO
+    │   │   └── Legajo.java                             # Entidad relacionada (B)
+    │   ├── dao/            
+    │   │   ├── GenericDao.java                         # Interfaz genérica CRUD
+    │   │   ├── EmpleadoDao.java                        # DAO específico de Empleado
+    │   │   └── LegajoDao.java                          # DAO específico de Legajo
     │   ├── dao/impl/
-    │   │   ├── EmpleadoDaoJdbcImpl.java     # Implementación JDBC de EmpleadoDao
-    │   │   └── LegajoDaoJdbcImpl.java       # Implementación JDBC de LegajoDao
+    │   │   ├── EmpleadoDaoJdbcImpl.java                # Implementación JDBC de EmpleadoDao
+    │   │   └── LegajoDaoJdbcImpl.java                  # Implementación JDBC de LegajoDao
+    │   ├── service/                  
+    │   │   ├── impl/
+    │   │   │   ├── EmpleadoLegajoServiceImpl.java      # Alta atómica Empleado+Legajo en una transacción
+    │   │   │   ├── EmpleadoServiceImpl.java            # Reglas de Empleado + orquestación transaccional
+    │   │   │   └── LegajoServiceImpl.java              # Reglas de Legajo + orquestación transaccional
+    │   │   ├── AbstractTransactionalService.java       # Helper base: begin/commit/rollback + read-only
+    │   │   ├── EmpleadoLegajoService.java              # Interfaz del caso de uso compuesto (Empleado+Legajo)
+    │   │   ├── EmpleadoService.java                    # Interfaz de negocio de Empleado (CRUD + búsquedas)
+    │   │   ├── LegajoService.java                      # Interfaz de negocio de Legajo (CRUD + búsquedas)
+    │   │   ├── ServiceException.java                   # Excepción unchecked de negocio/infra 
+    │   │   ├── ServiceFactory.java                     # Fábrica/overrides para obtener servicios
+    │   │   └── ServiceModule.java                      # Punto único de acceso a servicios
     │   └── tpi_p2/
-    │       ├── TestConexion.java            # Test de conexión
-    │       └── tpi_p2.java                  # Clase principal / menú (en desarrollo)
-    └── build.xml                            # Configuración Ant
+    │       ├── TestConexion.java                       # Test de conexión
+    │       └── tpi_p2.java                             # Clase principal / menú (en desarrollo)
+    └── build.xml                                       # Configuración Ant
 ```
 
 ---
@@ -191,6 +203,19 @@ La capa DAO encapsula todo el acceso a la base de datos utilizando JDBC y `Prepa
 
 Todos los métodos están implementados con manejo de excepciones `SQLException`,
 baja lógica (`eliminado = 1`), y conexión gestionada por la clase `DatabaseConnection`.
+
+---
+
+## 🧠 Capa Service (negocio) — Resumen simple
+
+La capa **Service** aplica reglas de negocio y maneja transacciones sobre los DAOs, entregando métodos de alto nivel a la aplicación.
+
+- **AbstractTransactionalService**: centraliza `setAutoCommit(false)`, `commit/rollback`, restauración de conexión y modo `read-only`.
+- **ServiceException**: excepción *unchecked* para errores de validación, conflicto, no encontrado e infraestructura.
+- **EmpleadoService / LegajoService**: interfaces con CRUD y búsquedas específicas del dominio.
+- **EmpleadoServiceImpl / LegajoServiceImpl**: validan datos (DNI/nroLegajo, fechas, estados), garantizan unicidad y usan transacciones en escrituras.
+- **EmpleadoLegajoService / EmpleadoLegajoServiceImpl**: caso de uso compuesto para crear Empleado y Legajo en una sola transacción.
+- **ServiceFactory / ServiceModule**: obtención simple de servicios y posibilidad de inyectar overrides (p. ej., en tests).
 
 ---
 
