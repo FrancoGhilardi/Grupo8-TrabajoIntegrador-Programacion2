@@ -206,7 +206,7 @@ baja lógica (`eliminado = 1`), y conexión gestionada por la clase `DatabaseCon
 
 ---
 
-## 🧠 Capa Service (negocio) — Resumen simple
+## 🧠 Capa Service (negocio)
 
 La capa **Service** aplica reglas de negocio y maneja transacciones sobre los DAOs, entregando métodos de alto nivel a la aplicación.
 
