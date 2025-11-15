@@ -1,24 +1,78 @@
 package main;
 
-import entities.*;
-import service.impl.*;
+import entities.Empleado;
+import entities.Legajo;
+import entities.EstadoLegajo;
+
+import service.EmpleadoService;
+import service.LegajoService;
+import service.EmpleadoLegajoService;
+import service.ServiceModule;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.Objects;
 
 
-//menu principal de la aplicacion.
-
+/**
+ * Menú principal de la aplicación.
+ *
+ * Esta clase controla toda la interacción por consola con el usuario.
+ * Permite gestionar empleados, legajos y realizar operaciones conjuntas.
+ *
+ * Responsabilidades principales:
+ * 
+ *   Mostrar menús y submenús.
+ *   Leer entradas del usuario de forma segura.
+ *   Invocar los servicios correspondientes.
+ *   Manejar errores y mostrar mensajes claros.
+ * 
+ */
 public class AppMenu {
 
-    private final Scanner scanner = new Scanner(System.in);
+    /** Lector de consola general para todo el menú. */
+    private final Scanner scanner;
 
-    private final EmpleadoServiceImpl empleadoService = new EmpleadoServiceImpl();
-    private final LegajoServiceImpl legajoService = new LegajoServiceImpl();
-    private final EmpleadoLegajoServiceImpl empleadoLegajoService = new EmpleadoLegajoServiceImpl();
+    /** Servicio para operaciones de empleados. */
+    private final EmpleadoService empleadoService;
 
+    /** Servicio para operaciones de legajos. */
+    private final LegajoService legajoService;
+
+    /** Servicio para operaciones combinadas Empleado + Legajo. */
+    private final EmpleadoLegajoService empleadoLegajoService;
+    
+        // Constructor por defecto
+    public AppMenu() {
+        this(
+                ServiceModule.empleadoService(),
+                ServiceModule.legajoService(),
+                ServiceModule.empleadoLegajoService(),
+                new Scanner(System.in)
+        );
+    }
+        // Constructor inyectable
+    AppMenu(
+            EmpleadoService empleadoService,
+            LegajoService legajoService,
+            EmpleadoLegajoService empleadoLegajoService,
+            Scanner scanner
+    ) 
+    {
+        this.empleadoService = Objects.requireNonNull(empleadoService);
+        this.legajoService = Objects.requireNonNull(legajoService);
+        this.empleadoLegajoService = Objects.requireNonNull(empleadoLegajoService);
+        this.scanner = Objects.requireNonNull(scanner);
+        }
+
+
+    /**
+     * Muestra el menú principal de la aplicación.
+     *
+     * Permite elegir entre gestionar empleados, legajos o realizar alta conjunta.
+     */
     public void mostrar() {
         int opcion;
         do {
@@ -40,9 +94,13 @@ public class AppMenu {
         } while (opcion != 0);
     }
 
-    
-    // submenu empleados
-    
+    // 
+    // SUBMENU EMPLEADOS
+    // 
+
+    /**
+     * Muestra el submenU para operaciones sobre empleados.
+     */
     private void menuEmpleados() {
         int opcion;
         do {
@@ -70,35 +128,65 @@ public class AppMenu {
         } while (opcion != 0);
     }
 
+    /**
+     * Crea un nuevo empleado solicitando los datos por consola.
+     */
     private void crearEmpleado() {
-        try {
-            System.out.print("Nombre: ");
-            String nombre = scanner.nextLine().trim();
-            System.out.print("Apellido: ");
-            String apellido = scanner.nextLine().trim();
-            System.out.print("DNI: ");
-            String dni = scanner.nextLine().trim();
-            System.out.print("Area: ");
-            String area = scanner.nextLine().trim().toUpperCase();
-            System.out.print("Email (opcional): ");
-            String email = scanner.nextLine().trim();
+    try {
+        System.out.println("\n--- CREAR EMPLEADO ---");
+        System.out.print("Nombre: ");
+        String nombre = scanner.nextLine().trim();
+        System.out.print("Apellido: ");
+        String apellido = scanner.nextLine().trim();
+        System.out.print("DNI: ");
+        String dni = scanner.nextLine().trim();
+        System.out.print("Area: ");
+        String area = scanner.nextLine().trim().toUpperCase();
+        System.out.print("Email (opcional): ");
+        String email = scanner.nextLine().trim();
+        System.out.println("\nSeleccione un legajo disponible");
+        List<Legajo> legajos = legajoService.getAll();
 
-            Empleado e = new Empleado();
-            e.setNombre(nombre);
-            e.setApellido(apellido);
-            e.setDni(dni);
-            e.setArea(area);
-            e.setEmail(email);
-            e.setFechaIngreso(LocalDate.now());
+        if (legajos.isEmpty()) {
+            System.out.println("No existen legajos disponibles. Debe crear uno antes.");
+            return;
+        }
 
-            empleadoService.insertar(e);
-            System.out.println("Empleado creado con éxito.");
+        legajos.forEach(l -> 
+            System.out.println("ID: " + l.getId() + " | Nro: " + l.getNroLegajo() + " | Estado: " + l.getEstado())
+        );
+
+        System.out.print("Ingrese el ID del legajo a asociar: ");
+        long idLegajo = leerLong();
+
+        Optional<Legajo> legOpt = legajoService.getById(idLegajo);
+        if (legOpt.isEmpty()) {
+            System.out.println("Legajo inexistente.");
+            return;
+        }
+
+        Legajo leg = legOpt.get();
+
+        Empleado e = new Empleado();
+        e.setNombre(nombre);
+        e.setApellido(apellido);
+        e.setDni(dni);
+        e.setArea(area);
+        e.setEmail(email);
+        e.setFechaIngreso(LocalDate.now());
+        e.setLegajo(leg); 
+
+        empleadoService.insertar(e);
+        System.out.println("Empleado creado con éxito.");
 
         } catch (Exception ex) {
             System.out.println("Error al crear empleado: " + ex.getMessage());
         }
     }
 
+    /**
+     * Busca un empleado por su ID.
+     */
     private void buscarEmpleadoPorId() {
         System.out.print("Ingrese ID de empleado: ");
         long id = leerLong();
@@ -109,6 +197,9 @@ public class AppMenu {
         );
     }
 
+    /**
+     * Busca un empleado por su DNI.
+     */
     private void buscarEmpleadoPorDni() {
         System.out.print("Ingrese DNI: ");
         String dni = scanner.nextLine().trim();
@@ -119,23 +210,32 @@ public class AppMenu {
         );
     }
 
+    /**
+     * Lista todos los empleados registrados.
+     */
     private void listarEmpleados() {
         List<Empleado> empleados = empleadoService.getAll();
         if (empleados.isEmpty()) System.out.println("No hay empleados registrados.");
         else empleados.forEach(System.out::println);
     }
 
+    /**
+     * Actualiza los datos de un empleado existente.
+     */
     private void actualizarEmpleado() {
         try {
             System.out.print("Ingrese ID del empleado a actualizar: ");
             long id = leerLong();
             Optional<Empleado> empOpt = empleadoService.getById(id);
+
             if (empOpt.isEmpty()) {
                 System.out.println("Empleado no encontrado.");
                 return;
             }
 
             Empleado e = empOpt.get();
+            System.out.println("\n--- Actualizando empleado ID " + id + " ---");
+
             System.out.print("Nuevo nombre (" + e.getNombre() + "): ");
             String nombre = scanner.nextLine().trim();
             if (!nombre.isEmpty()) e.setNombre(nombre);
@@ -144,14 +244,24 @@ public class AppMenu {
             String apellido = scanner.nextLine().trim();
             if (!apellido.isEmpty()) e.setApellido(apellido);
 
+            System.out.print("Nueva area (" + e.getArea() + "): ");
+            String area = scanner.nextLine().trim();
+            if (!area.isEmpty()) e.setArea(area.toUpperCase());
+
+            System.out.print("Nuevo email (" + e.getEmail() + "): ");
+            String email = scanner.nextLine().trim();
+            if (!email.isEmpty()) e.setEmail(email);
+
             empleadoService.actualizar(e);
             System.out.println("Empleado actualizado correctamente.");
 
         } catch (Exception ex) {
-            System.out.println("Error al actualizar: " + ex.getMessage());
+            System.out.println("Error al actualizar empleado: " + ex.getMessage());
         }
     }
-
+    /**
+     * Elimina un empleado por ID .
+     */
     private void eliminarEmpleado() {
         System.out.print("Ingrese ID de empleado a eliminar: ");
         long id = leerLong();
@@ -164,8 +274,12 @@ public class AppMenu {
     }
 
     
-    // submenu legajos
-    
+    // SUBMENU LEGAJOS
+   
+
+    /**
+     * Muestra el submenú de gestión de legajos.
+     */
     private void menuLegajos() {
         int opcion;
         do {
@@ -193,18 +307,25 @@ public class AppMenu {
         } while (opcion != 0);
     }
 
+    /**
+     * Crea un nuevo legajo solicitando los datos por consola.
+     */
     private void crearLegajo() {
         try {
             System.out.print("Numero de legajo: ");
-            String nro = scanner.nextLine().trim();
+            String nro = scanner.nextLine().trim().toUpperCase();
+            
             System.out.print("Categoria: ");
             String categoria = scanner.nextLine().trim().toUpperCase();
             System.out.print("Estado (ACTIVO/INACTIVO): ");
+            
             String estadoStr = scanner.nextLine().trim().toUpperCase();
-
             EstadoLegajo estado = EstadoLegajo.valueOf(estadoStr);
-            Legajo l = new Legajo(null, false, nro, categoria, estado, LocalDate.now(), "");
 
+            System.out.print("Observaciones (opcional): ");
+            String obs = scanner.nextLine().trim();
+
+            Legajo l = new Legajo(null, false, nro, categoria, estado, LocalDate.now(), obs);
             legajoService.insertar(l);
             System.out.println("Legajo creado con exito.");
 
@@ -213,6 +334,9 @@ public class AppMenu {
         }
     }
 
+    /**
+     * Busca un legajo por su ID.
+     */
     private void buscarLegajoPorId() {
         System.out.print("Ingrese ID de legajo: ");
         long id = leerLong();
@@ -223,6 +347,9 @@ public class AppMenu {
         );
     }
 
+    /**
+     * Busca un legajo por su número único.
+     */
     private void buscarLegajoPorNumero() {
         System.out.print("Ingrese numero de legajo: ");
         String nro = scanner.nextLine().trim();
@@ -233,26 +360,44 @@ public class AppMenu {
         );
     }
 
+    /**
+     * Lista todos los legajos almacenados.
+     */
     private void listarLegajos() {
         List<Legajo> legajos = legajoService.getAll();
         if (legajos.isEmpty()) System.out.println("No hay legajos registrados.");
         else legajos.forEach(System.out::println);
     }
 
+    /**
+     * Actualiza información de un legajo existente.
+     */
     private void actualizarLegajo() {
         try {
             System.out.print("Ingrese ID del legajo: ");
             long id = leerLong();
             Optional<Legajo> legOpt = legajoService.getById(id);
+
             if (legOpt.isEmpty()) {
                 System.out.println("Legajo no encontrado.");
                 return;
             }
 
             Legajo l = legOpt.get();
+            System.out.println("\n--- Actualizando legajo ID " + id + " ---");
+
             System.out.print("Nueva categoria (" + l.getCategoria() + "): ");
             String categoria = scanner.nextLine().trim();
             if (!categoria.isEmpty()) l.setCategoria(categoria.toUpperCase());
+
+            System.out.print("Nuevo estado (" + l.getEstado().name() + ") [ACTIVO/INACTIVO]: ");
+            String estado = scanner.nextLine().trim().toUpperCase();
+            if (!estado.isEmpty())
+                l.setEstado(EstadoLegajo.valueOf(estado));
+
+            System.out.print("Nuevas observaciones (" + l.getObservaciones() + "): ");
+            String obs = scanner.nextLine().trim();
+            if (!obs.isEmpty()) l.setObservaciones(obs);
 
             legajoService.actualizar(l);
             System.out.println("Legajo actualizado correctamente.");
@@ -262,6 +407,9 @@ public class AppMenu {
         }
     }
 
+    /**
+     * Elimina un legajo por ID.
+     */
     private void eliminarLegajo() {
         System.out.print("Ingrese ID de legajo a eliminar: ");
         long id = leerLong();
@@ -273,8 +421,13 @@ public class AppMenu {
         }
     }
 
-    // alta conjunta
     
+    // ALTA CONJUNTA
+    
+    /**
+     * Realiza la creación simultanea de un empleado y su legajo,
+     * en una unica transacción.
+     */
     private void altaConjunta() {
         try {
             System.out.println("\n--- ALTA CONJUNTA EMPLEADO + LEGAJO ---");
@@ -291,10 +444,12 @@ public class AppMenu {
             String email = scanner.nextLine().trim();
 
             System.out.print("Numero de legajo: ");
-            String nro = scanner.nextLine().trim();
+            String nro = scanner.nextLine().trim().toUpperCase();
             System.out.print("Categoria: ");
             String categoria = scanner.nextLine().trim().toUpperCase();
-
+            System.out.print("Observaciones (opcional): ");
+            String obs = scanner.nextLine().trim();
+            
             Empleado e = new Empleado();
             e.setNombre(nombre);
             e.setApellido(apellido);
@@ -303,8 +458,7 @@ public class AppMenu {
             e.setEmail(email);
             e.setFechaIngreso(LocalDate.now());
 
-
-            Legajo l = new Legajo(null, false, nro, categoria, EstadoLegajo.ACTIVO, LocalDate.now(), "");
+            Legajo l = new Legajo(null, false, nro, categoria, EstadoLegajo.ACTIVO, LocalDate.now(), obs);
 
             empleadoLegajoService.altaEmpleadoConLegajo(e, l);
             System.out.println("Alta conjunta realizada con exito.");
@@ -314,9 +468,15 @@ public class AppMenu {
         }
     }
 
-    
-    // utilitarios para que las entradas del usuario sean validas y que no crashee el menu
-    
+    // UTILITARIOS
+
+    /**
+     * lee un valor entero desde consola.
+     *
+     * si la entrada no es valida, retorna -1 para evitar que el programa falle.
+     *
+     * @return numero entero ingresado o -1 si la entrada es invalida
+     */
     private int leerEntero() {
         try {
             return Integer.parseInt(scanner.nextLine().trim());
@@ -324,7 +484,15 @@ public class AppMenu {
             return -1;
         }
     }
+    
 
+    /**
+     * lee un valor long desde consola.
+     *
+     * muestra un mensaje si la entrada es invalida y retorna -1.
+     *
+     * @return numero long ingresado o -1 si ocurrió un error
+     */
     private long leerLong() {
         try {
             return Long.parseLong(scanner.nextLine().trim());

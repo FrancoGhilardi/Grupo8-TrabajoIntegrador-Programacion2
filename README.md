@@ -103,8 +103,7 @@ Para agregarlo a tu proyecto en NetBeans:
 
 1. Abre el proyecto `tpi_p2` en NetBeans
 2. Clic derecho en el proyecto → **Clean and Build**
-3. Ejecuta la clase `TestConexion.java` o `tpi_p2.java`:
-    - Clic derecho en el archivo → **Run File**
+3. Clic derecho en el proyecto → **Run**
 
 ### Opción 2: Desde la Línea de Comandos
 
@@ -179,9 +178,10 @@ Grupo8-TrabajoIntegrador-Programacion2/
     │   │   ├── ServiceException.java                   # Excepción unchecked de negocio/infra 
     │   │   ├── ServiceFactory.java                     # Fábrica/overrides para obtener servicios
     │   │   └── ServiceModule.java                      # Punto único de acceso a servicios
-    │   └── tpi_p2/
-    │       ├── TestConexion.java                       # Test de conexión
-    │       └── tpi_p2.java                             # Clase principal / menú (en desarrollo)
+    │   └── main/
+    │       ├── AppMenu.java                            # Menú
+    │       ├── Main.java                               # Clase principal
+    │       └── TestConexion.java                       # Test de conexión
     └── build.xml                                       # Configuración Ant
 ```
 

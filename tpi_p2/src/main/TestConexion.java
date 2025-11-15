@@ -1,4 +1,4 @@
-package tpi_p2;
+package main;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -37,14 +37,14 @@ public class TestConexion {
      */
     public static void probarConexion() {
 
-        System.out.println("🔧 Iniciando prueba de conexión...");
+        System.out.println("🔧 Iniciando prueba de conexion...");
         
         try (Connection conn = DatabaseConnection.getConnection()) {
             if (conn != null) {
-                System.out.println("✅ Conexión establecida con éxito.");
+                System.out.println("✅ Conexion establecida con exito.");
           
             } else {
-                System.out.println("❌ No se pudo establecer la conexión.");
+                System.out.println("❌ No se pudo establecer la conexion.");
             }
         } catch (SQLException e) {
             // Manejo de errores en la conexión a la base de datos
