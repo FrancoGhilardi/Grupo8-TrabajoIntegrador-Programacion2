@@ -249,6 +249,14 @@ Tecnicatura Universitaria en Programación - Programación 2 - Universidad Tecno
 
 ---
 
+---
+
+## Video
+
+**Link al video:** https://drive.google.com/file/d/18ywtsiVj87hX8B0tfh7lJMiW9cpQRPwd/view?usp=sharing
+
+---
+
 ## 📝 Licencia
 
 Proyecto académico - UTN
